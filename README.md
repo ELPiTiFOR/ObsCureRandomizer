@@ -63,8 +63,8 @@ must be considered in its binary form: 0x07 is 0b0111, 0x03 is 0b0011, 0x08 is
 the right, the first bit represents Easy difficulty, the next one is the Normal
 difficulty, next the Hard one, and finally the Special Mode.\
 Scheme:\
-        Special Mode        Hard           Normal           Easy\
-          [   0   ]       [   0   ]       [   0   ]       [   0   ]\
+\ \ \ \ \ \ \ \ \Special Mode\ \ \ \ \ \ \ \ Hard\ \ \ \ \ \ \ \ \ \ \ Normal\ \ \ \ \ \ \ \ \ \ \ Easy\
+\ \ \ \ \ \ \ \ \ \ \[\ \ \ 0\ \ \ ]\ \ \ \ \ \ \ [\ \ \ 0\ \ \ ]\ \ \ \ \ \ \ [\ \ \ 0\ \ \ ]\ \ \ \ \ \ \ [\ \ \ 0\ \ \ ]\
 So, if the value of the last integer field of an item is 0b0111 (0x07) it means
 the item is present in all difficulties (regardless of the Mode). If it's
 0b0100 (0x4), it means it's only present in Hard difficulty. If it's 0b0011
