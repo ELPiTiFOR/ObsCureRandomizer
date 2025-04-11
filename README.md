@@ -138,10 +138,11 @@ They all start with 0x01
 # Room list
 Here's a list of all rooms sorted by their ID. The list is incomplete as of
 today, it will keep growing as the project advances.
-Randomizable:
-	- b008: Cafeteria
-	- e103: Infirmary
 
-Not yet randomizable:
-	- b100: Attic
-	- and much more
+##Randomizable:
+- b008: Cafeteria
+- e103: Infirmary
+
+##Not yet randomizable:
+- b100: Attic
+- and much more
