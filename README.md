@@ -2,6 +2,15 @@
 This documentation is not perfect, it will be upgraded and updated little by
 little.
 
+## Warning
+This program modifies your game files. If something goes wrong, a file could go
+corrupted and the game could stop working. I'm not responsible for the state of
+your game files, you should maybe make some backup of the files just in case.
+Specifically, you should make backups for all of the
+`$OBS_PATH\\data\\_levels\\x\\xxxx_n.tm` files and the
+`$OBS_PATH\\data\\_common\allitems.it` file, which are the only files this
+program modifies.
+
 ## Goal of the project
 The goal of this project is to provide a way to randomize the videogame ObsCure
 by Hydravision Entertainment. These are the different goals that could be
@@ -129,5 +138,10 @@ They all start with 0x01
 # Room list
 Here's a list of all rooms sorted by their ID. The list is incomplete as of
 today, it will keep growing as the project advances.
-- b008: Cafeteria
-- b100: Attic
+Randomizable:
+	- b008: Cafeteria
+	- e103: Infirmary
+
+Not yet randomizable:
+	- b100: Attic
+	- and much more
