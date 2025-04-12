@@ -130,8 +130,9 @@ K bytes: This field gives us some information on the difficulties in which the
          then the first number in this field must be "1" (0x31). If we want to
          multiply the ammo by 10, then we can write "10/1/7" for example
          (in hex: 0x31 0x30 0x2F 0x31 0x2F 0x37), but in the `.it` file the
-         integer must be 0x0000000A. The role of the 2nd number is unknown to
-         me.
+         integer must be 0x0000000A, and the previous field should be updated
+         to tell that this one occupies 6 bytes and not 5 anymore. The role of
+         the 2nd number is unknown to me.
          In some cases, this field will just be "1" (0x31), in which case the
          previous field has the value 0x00000001, since this last field is
          1 byte long (that's my guess).
