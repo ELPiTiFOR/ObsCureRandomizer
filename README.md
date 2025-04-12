@@ -99,24 +99,24 @@ I've been able to understand: At the end of these files lie all the information
 of the pickable items in the room. This data must go accordingly to the data in
 the `allitems.it` file. Each item has this structure:
 
-4 bytes: Unknown to me, most of the time it's just 0x00000008
-4 bytes: Unknown to me, most of the time it's just 0x00000045
-4 bytes: The ID of the item, for example 0x000000CA for the yellow baseball bat
-4 bytes: The location of the item, must be the same as in the `allitems.it` file
-4 bytes: The position of the item alon the X axis.
-4 bytes: The position of the item alon the Y axis.
-4 bytes: The position of the item alon the Z axis.
-4 bytes: The rotation of the item alon the X axis (probably).
-4 bytes: The rotation of the item alon the Y axis (probably).
-4 bytes: The rotation of the item alon the Z axis (probably).
-4 bytes: Unknown to me.
-4 bytes: Unknown to me.
-4 bytes: Unknown to me.
-4 bytes: Unknown to me.
-4 bytes: Unknown to me.
-4 bytes: Unknown to me.
+4 bytes: Unknown to me, most of the time it's just 0x00000008\
+4 bytes: Unknown to me, most of the time it's just 0x00000045\
+4 bytes: The ID of the item, for example 0x000000CA for the yellow baseball bat\
+4 bytes: The location of the item, must be the same as in the `allitems.it` file\
+4 bytes: The position of the item alon the X axis.\
+4 bytes: The position of the item alon the Y axis.\
+4 bytes: The position of the item alon the Z axis.\
+4 bytes: The rotation of the item alon the X axis (probably).\
+4 bytes: The rotation of the item alon the Y axis (probably).\
+4 bytes: The rotation of the item alon the Z axis (probably).\
+4 bytes: Unknown to me.\
+4 bytes: Unknown to me.\
+4 bytes: Unknown to me.\
+4 bytes: Unknown to me.\
+4 bytes: Unknown to me.\
+4 bytes: Unknown to me.\
 4 bytes: This field seems to tell how many bytes are left in the item structure,
-         Let's say its value is K
+         Let's say its value is K\
 K bytes: This field gives us some information on the difficulties in which the
          item can be found, the multiplier, and some other info that is unknown
          to me. This field is an array of characters that shows a series of
