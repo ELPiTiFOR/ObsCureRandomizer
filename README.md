@@ -11,6 +11,9 @@ Specifically, you should make backups for all of the
 `$OBS_PATH\\data\\_common\allitems.it` file, which are the only files this
 program modifies.
 
+You can also make backups with `ObsCureRandomizer.exe`, for more information
+about making backups, read the section "How to use".
+
 ## Goal of the project
 The goal of this project is to provide a way to randomize the videogame ObsCure
 by Hydravision Entertainment. These are the different goals that could be
@@ -38,6 +41,69 @@ executable of the game, `Obscure.exe`. I'll also be considering that you have
 all your folders called `_common`, `_kine`, `_levels`, [...] inside `data`.
 Those folders are the ones that can be extracted from the `.hvp` files.
 
+# Usage
+## What this tool can do
+- This tool can make backups of the `allitems.it` file and the `_n.tm` files,
+which are the files it modifies. The 
+- It can restore the files using a backup.
+- It can randomize all the rooms, even though not all items are yet supported
+(It's just a matter of time that I add them). And I still don't manage the items
+that only spawn after some event correctly. The randomization can be done in 3
+difficulties (which are not related to the difficulty of the game), each one
+has different probabilities for an item/weapon to spawn.
+
+## How to use the tool
+This tool can only be used by a CLI, so first of all open `cmd` in Windows and
+go to the directory where the executable is located with the command `cd`.
+For example, if `ObsCureRandomizer.exe` is at
+`C:\User\Downloads\ObsCureRandomizer.exe`, run:\
+`cd C:\User\Downloads\ObsCureRandomizer.exe`\
+To invoke the executable, run:
+`.\ObsCureRandomizer.exe [<params>]`\
+Where `[<params>]` is the list of arguments passed to the program.
+
+For each feature of the program, you need to add a option, and sometimes a
+parameter after that. For example, if you want to select a specific room:\
+`.\ObsCureRandomizer.exe --room b008`.
+
+Here's a list of the options:
+- `--help`: show some info about the tool
+- `--room <room_id>`: select a specific room with its ID. This doesn't do
+anything on its own, you should put it just before one of the two following
+options:
+- `--randomize`: randomizes the selected room if one has been specified, or
+the whole game otherwise
+- `--restore`: restores the selected room if one has been specified, or the
+whole game otherwise. To restore one or more rooms, you need to specify a
+path for the backups and a name for the backup to restore the files from.
+- `--path <game_path>`: specify the path to the game
+- `--backup-path <backup_path>`: specify the path to the where the backups
+should be saved
+- `--backup-name <backup_name>`: specify the name of the backup, so the backup
+will be saved at `<backup_path>/<backup_name>/`
+- `--backup`: perform the backup according to the given `<backup_path>` and
+`<backup_name>`
+- `--log-path <log_path>`: specify the path to the file where the logs should be
+saved.
+- `--exec-script [<script_path>]`: execute the given script instead of executing
+the commands written on `cmd`. You write the script the same way you would
+write commands to the `cmd`, except that words are delimited by semi colons `;`
+and CRLF `\r\n` instead of spaces, and you don't write the name of the program
+`.\ObsCureRandomizer.exe`. If no script path is given, `script.ocr` will be read
+(in the same directory as the executable).
+
+To avoid specifying the paths each time, you can use a `OCR.config` file in the
+same directory as the executable file. Its syntax must be the following. Each
+line of the `OCR.config` file must follow this regex: `[^=\r\n]*=[^=\r\n]*`.
+In other words, a string without any equal sign nor CRLF, followed by an equal
+sign, followed by another string without any equal sign nor CRLF. Example:
+```
+game-path=C:\some\path\Obscure
+backup-path=E:\some\other\path with spaces\ObsCureRandomizer
+backup-name=Original
+difficulty=HARD
+```
+The `difficulty` must be "EASY", "NORMAL" or "HARD".
 
 # Items
 ## How it works
@@ -61,7 +127,12 @@ The list of all items can be found in Item List in this documentation.
 The second integer (the next 4 bytes) gives us the location of the item (not
 the same as the position).
 
-The third integer's role is unknown to me.
+The third integer's role is unknown to me.\
+The third integer's role depends on the ID of the item. If it's a statuette (with
+ID 0x0191), it represents which of the 4 statuettes it is. It can then have the
+values 0x01, 0x02, 0x03 and 0x04.
+0x00: A statuette
+0x01: A statuette
 
 The fourth integer is a multiplier, it is used for ammo (might work on some other
 items too). If set to 1, pistol ammo boxes will give 15 bullets and shotgun ammo
@@ -99,8 +170,9 @@ I've been able to understand: At the end of these files lie all the information
 of the pickable items in the room. This data must go accordingly to the data in
 the `allitems.it` file. Each item has this structure:
 
-4 bytes: Unknown to me, most of the time it's just 0x00000008\
-4 bytes: Unknown to me, most of the time it's just 0x00000045\
+4 bytes: The ID of this section. For items, it's 0x00000008\
+4 bytes: This field tells hoy many bytes takes the current item\
+         (including these 4 bytes)
 4 bytes: The ID of the item, for example 0x000000CA for the yellow baseball bat\
 4 bytes: The location of the item, must be the same as in the `allitems.it` file\
 4 bytes: The position of the item alon the X axis.\
@@ -186,10 +258,7 @@ They all start with 0x01
 Here's a list of all rooms sorted by their ID. The list is incomplete as of
 today, it will keep growing as the project advances.
 
-## Randomizable:
 - b008: Cafeteria
 - e103: Infirmary
-
-## Not yet randomizable:
 - b100: Attic
 - and much more

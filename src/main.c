@@ -6,8 +6,12 @@
 
 #include "allitems.h"
 #include "commands.h"
+#include "config.h"
 #include "file_io.h"
+#include "logger.h"
 #include "room.h"
+#include "path.h"
+#include "state.h"
 #include "utils.h"
 
 int main(int argc, char *argv[])
@@ -16,6 +20,12 @@ int main(int argc, char *argv[])
     arfillzeros(path_items, 512); // path_items is the path to the allitems.it file
     arfillzeros(path_room, 512); // path_room is the path to a XXXX_n.tm file
     arfillzeros(path_game, 512); // path_game is the path to the Obscure folder
+    arfillzeros(path_backups, 512); // path_backups is the path to the folder
+                                    //where all the backups/states will be saved
+    arfillzeros(path_backups_items, 512);
+    arfillzeros(path_backups_room, 512);
+    arfillzeros(path_logs, 512);
+    arfillzeros(log_buf, LOG_BUF_SIZE);
     groupscat(); // this concatenates all the different item groups into the allitems group
 
     if (argc < 2)
@@ -36,106 +46,59 @@ int main(int argc, char *argv[])
         }
     }
 
-    int performed_action = 0;
-    enum room_id e_room = NOROOM;
-
-    // now we manage all other commands/actions
     for (int i = 0; i < argc; i++)
     {
-        if (strcmp(argv[i], "--path") == 0 && argc > i + 1)
+        if (strcmp(argv[i], "--log-path") == 0 && argc > i + 1)
         {
-            if (argc > i + 1)
-            {
-                path(argv[i + 1]);
-                i++;
-            }
-            else
-            {
-                fprintf(stderr, "ERROR: You must provide a path after the `--path` option");
-            }
-        }
-
-        if (strcmp(argv[i], "--room") == 0 && argc > i + 1)
-        {
-            if (path_game[0] == 0)
-            {
-                fprintf(stderr, "ERROR: You must provide a path before specifying the room\n");
-                return 1;
-            }
-
-            if (argc > i + 1)
-            {
-                if (strcmp(argv[i + 1], "b008") == 0)
-                {
-                    e_room = B008;
-                }
-                else
-                {
-                    fprintf(stderr, "ERROR: No such room: %s\n", argv[i + 1]);
-                    return 1;
-                }
-
-                set_path_room(rooms[e_room]);
-                i++;
-            }
-            else
-            {
-                fprintf(stderr, "ERROR: You must provide a room ID after the `--room` option");
-            }
-
-        }
-
-        if (strcmp(argv[i], "--randomize") == 0)
-        {
-            if (path_game[0] == 0)
-            {
-                fprintf(stderr, "ERROR: You must provide a path before randomizing\n");
-                return 1;
-            }
-
-            performed_action = 1;
-            if (e_room == NOROOM)
-            {
-                for (size_t i = 0; i < ROOMS_NB; i++)
-                {
-                    set_path_room(rooms[rooms_ids[i]]);
-                    randomize_room(rooms_ids[i]);
-                }
-            }
-            else
-            {
-                randomize_room(e_room);
-            }
-        }
-
-        if (strcmp(argv[i], "--restore") == 0)
-        {
-            if (path_game[0] == 0)
-            {
-                fprintf(stderr, "ERROR: You must provide a path before restoring\n");
-                return 1;
-            }
-
-            performed_action = 1;
-            if (e_room == NOROOM)
-            {
-                for (size_t i = 0; i < ROOMS_NB; i++)
-                {
-                    set_path_room(rooms[rooms_ids[i]]);
-                    restore_room(rooms[rooms_ids[i]]);
-                }
-            }
-            else
-            {
-                restore_room(rooms[e_room]);
-            }
+            log_path(argv[i + 1]);
         }
     }
 
-    if (!performed_action)
+    if (!log_file)
     {
-        printf("WARN: It seems like you didn't perform any action, wanna try --randomize or --restore?\n");
+        set_default_log_file();
     }
 
-    return 0;
+    // now we load the config file
+    load_config();
+    log(LOG_MINOR, "Loaded config\n");
+
+    // first we check if one of the options is '--test', in which case
+    // we shouldn't perform any other actions
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--test") == 0)
+        {
+            test();
+            return 0;
+        }
+    }
+
+    // if there's a script to be executed, we execute it and do nothing else
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--exec-script") == 0)
+        {
+            if (argc > i + 1)
+            {
+                script(argv[i + 1]);
+                log(LOG_APP_CMD, "Exiting.\n");
+                log_end_log();
+                return 0;
+            }
+
+            log(LOG_APP_CMD, "Executing script .\\script.ocr\n");
+            //printf("LOG: executing script .\\script.ocr\n");
+            script(".\\script.ocr");
+            log(LOG_APP_CMD, "Exiting.\n");
+            log_end_log();
+            return 0;
+        }
+    }
+
+    log(LOG_APP_CMD, "Executing commands.\n");
+    int ret = execute_commands(argc, argv);
+    log(LOG_APP_CMD, "Exiting.\n");
+    log_end_log();
+    return ret;
 }

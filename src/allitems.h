@@ -1,10 +1,12 @@
 #ifndef ALLITEMS_H
 #define ALLITEMS_H
 
-#include <stddef.h>
-
 #define WEAPONS_NB 10
 #define RESSOURCES_NB 4
+#define GUNS_NB 7
+
+#include <stddef.h>
+#include <stdint.h>
 
 /*
 ** Items:
@@ -70,8 +72,13 @@ enum item_id
 extern size_t allitems_nb;
 extern enum item_id allitems[256];
 extern enum item_id weapons[WEAPONS_NB];
+extern enum item_id guns[GUNS_NB];
 extern enum item_id ressource_items[RESSOURCES_NB];
+
+enum item_id get_random_item_with_prob();
 enum item_id get_random_item(enum item_id *group, size_t group_len);
 void groupscat();
+int restore_allitems();
+void replace_item_allitems(uint32_t loc, uint32_t id);
 
 #endif // ALLITEMS_H
