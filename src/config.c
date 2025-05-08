@@ -60,7 +60,7 @@ void load_config()
             }
 
         }
-        else if (strcmp(config[i][0], "log_level") == 0)
+        else if (strcmp(config[i][0], "log-level") == 0)
         {
             enum log_type log_t = get_log_type_from_string(config[i][1]);
             if (log_t == NOLOG)
@@ -75,7 +75,7 @@ void load_config()
                 log_level = log_t;
             }
         }
-        else if (strcmp(config[i][0], "reset_log") == 0)
+        else if (strcmp(config[i][0], "reset-log") == 0)
         {
             int bool_res = bool_str(config[i][1]);
             if (bool_res == -1)
