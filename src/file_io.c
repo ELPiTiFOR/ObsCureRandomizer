@@ -16,7 +16,9 @@ void copy_file(char *src, char *dst)
     {
         // TODO: format logs
         //log(ERROR, "Couldn't open src_file\n")
-        fprintf(stderr, "ERROR: Couldn't open src_file: %s\n", src);
+        char buf_log[512];
+        sprintf(buf_log, "Couldn't open src_file: %s\n", src);
+        log(ERROR, buf_log);
         return;
     }
 
@@ -26,7 +28,9 @@ void copy_file(char *src, char *dst)
     FILE *dst_file = fopen(dst, "wb");
     if (!dst_file)
     {
-        fprintf(stderr, "ERROR: Couldn't open dst_file: %s\n", dst);
+        char buf_log[512];
+        sprintf(buf_log, "Couldn't open dst_file: %s\n", dst);
+        log(ERROR, buf_log);
         fclose(src_file);
         return;
     }
@@ -39,21 +43,15 @@ void copy_file(char *src, char *dst)
     size_t total_read = _read;
     while (_read != 0)
     {
-        /*
-        printf("Read: %zu\nContent: ", _read);
-        print_array(buf, _read);
-        puts("");
-        */
         size_t _written = fwrite(buf, 1, _read, dst_file);
         if (_written != _read)
         {
-            fprintf(stderr, "WARN: Quantity of bytes read and written not equal\n");
+            log(WARN_HIGH, "Quantity of bytes read and written not equal\n");
         }
         _read = fread(buf, 1, 4096, src_file);
         total_read += _read;
     }
 
-    //printf("LOG: Total read bytes: %zu\n", total_read);
     fclose(src_file);
     fclose(dst_file);
 
@@ -180,7 +178,6 @@ char *str_from_file(char *src, size_t *total_written)
     size_t i = 0;
     while ((_read = fread(res + i, 1, 128 - 1, file)) != 0)
     {
-        //printf("i = %zu | _read = %zu | i + _read = %zu\n", i, _read, i + _read);
         i += _read;
         if (_read == 127)
         {
@@ -196,21 +193,9 @@ char *str_from_file(char *src, size_t *total_written)
         }
     }
 
-    char buf_log[4096];
-    sprintf(buf_log, "Content of the file: <%s>\n", res);
-    //log(LOG_MINOR, buf_log);
-
-    /*
-    printf("CONTENT OF THE FILE ONCE AGAIN:\n");
-    print_array(res, i);
-    puts("");
-    */
-
     if (total_written)
     {
-        //printf("i = %zu\n", i);
         *total_written = i;
-        //printf("*total_written = %zu\n", *total_written);
     }
     res[i] = 0;
     fclose(file);
@@ -241,7 +226,7 @@ char **str_to_argv(char *str, int *argc)
     char **res = calloc(1, sizeof(char *));
     if (!res)
     {
-        fprintf(stderr, "ERROR: Couldn't alloc res**");
+        log(ERROR, "Couldn't alloc res**");
         return NULL;
     }
 
@@ -259,7 +244,7 @@ char **str_to_argv(char *str, int *argc)
         char *tmp = calloc(len + 1, sizeof(char));
         if (tmp == NULL)
         {
-            fprintf(stderr, "ERROR: Couldn't alloc res[i]\n");
+            log(ERROR, "Couldn't alloc res[i]\n");
             free_argv(res);
             return NULL;
         }
@@ -267,7 +252,7 @@ char **str_to_argv(char *str, int *argc)
         char **res2 = realloc(res, sizeof(char *) * (i + 2));
         if (!res2)
         {
-            fprintf(stderr, "ERROR: Couldn't alloc res2\n");
+            log(ERROR, "Couldn't alloc res2\n");
             free_argv(res);
             return NULL;
         }
@@ -307,7 +292,6 @@ int file_from_string(char *dst, char *content, size_t len)
         return 1;
     }
 
-    //printf("len (from file_from_string) = %llX\n", len);
     size_t written = 0;
 
     size_t w;

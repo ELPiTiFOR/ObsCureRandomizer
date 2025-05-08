@@ -20,5 +20,6 @@ extern char *difficulties_str[DIFFICULTIES_NB];
 void load_config();
 void set_difficulty(int my_difficulty);
 enum difficulty get_difficulty_from_string(char *str);
+enum log_type get_log_type_from_string(char *str);
 
 #endif // CONFIG_H

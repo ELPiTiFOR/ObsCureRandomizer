@@ -17,58 +17,6 @@
 #include "tm_file.h"
 #include "utils.h"
 
-void restore_room(struct room* room)
-{
-    char buf_log[512];
-    sprintf(buf_log, "Restoring room %s\n", room->id);
-    log(LOG_MINOR, buf_log);
-
-    size_t i = 0;
-    long long item;
-
-    //FILE *room_file = fopen("C:\\SteamLibrary\\steamapps\\common\\Obscure\\data\\_levels\\b\\b008\\b008_n.tm", "r+b");
-    FILE *room_file = fopen(path_room, "r+b");
-    if (room_file == NULL)
-    {
-        fprintf(stderr, "ERROR: Couldn't open room_file: %s\n", path_room);
-        return;
-    }
-
-    //FILE *items_file = fopen("C:\\SteamLibrary\\steamapps\\common\\Obscure\\data\\_common\\allitems.it", "r+b");
-    FILE *items_file = fopen(path_items, "r+b");
-    if (items_file == NULL)
-    {
-        fprintf(stderr, "ERROR: Couldn't open items_file\n");
-        fclose(room_file);
-        return;
-    }
-
-    while ((item = room->items[i]) != 0)
-    {
-        // we take the last 4 bytes of item
-        int lsb = lsb_from_long(item);
-
-        // we take the first 4 bytes of item
-        int msb = msb_from_long(item);
-
-        char buf4[4];
-        char buf8[8];
-
-        itoa_hex(lsb, buf4);
-        lltoa_hex(item, buf8);
-
-        ssize_t offset_room = search_pattern(room_file, buf4, 4);
-        write_at_offset(room_file, offset_room - 4, buf8, 8);
-
-        // items file
-        ssize_t offset_items = search_pattern(items_file, buf4, 4);
-        write_at_offset(items_file, offset_items - 4, buf8, 8);
-        i++;
-    }
-    fclose(room_file);
-    fclose(items_file);
-}
-
 int restore_room2(enum room_id room)
 {
     char buf_log[512];
@@ -98,25 +46,8 @@ int restore_room2(enum room_id room)
     return 0;
 }
 
-void replace_item(enum room_id room, enum item_loc loc, enum item_id new_item)
+void replace_item(FILE *room_file, FILE *items_file, enum item_loc loc, enum item_id new_item)
 {
-    struct room *my_room = rooms[room];
-
-    FILE *room_file = fopen(path_room, "r+b");
-    if (room_file == NULL)
-    {
-        fprintf(stderr, "ERROR: Couldn't open room_file %s\n", path_room);
-        return;
-    }
-
-    FILE *items_file = fopen(path_items, "r+b");
-    if (items_file == NULL)
-    {
-        fprintf(stderr, "ERROR: Couldn't open items_file: %s\n", path_items);
-        fclose(room_file);
-        return;
-    }
-
     char buf4_loc[4];
     char buf4_item[4];
 
@@ -135,53 +66,11 @@ void replace_item(enum room_id room, enum item_loc loc, enum item_id new_item)
     fclose(items_file);
 }
 
-void randomize_item(enum room_id room, enum item_loc loc, enum item_id *group, size_t group_len)
-{
-    // TODO: format log
-    log(LOG_VERY_MINOR, "Randomizing item\n");
-    struct room *my_room = rooms[room];
-
-    FILE *room_file = fopen(path_room, "r+b");
-    if (room_file == NULL)
-    {
-        fprintf(stderr, "ERROR: Couldn't open room_file %s\n", path_room);
-        return;
-    }
-
-    FILE *items_file = fopen(path_items, "r+b");
-    if (items_file == NULL)
-    {
-        fprintf(stderr, "ERROR: Couldn't open items_file: %s\n", path_items);
-        fclose(room_file);
-        return;
-    }
-
-    char buf4_loc[4];
-    char buf4_item[4];
-
-    enum item_id new_item = get_random_item(group, group_len);
-
-    itoa_hex(loc, buf4_loc);
-    itoa_hex(new_item, buf4_item);
-
-    // room file
-    ssize_t offset_room = search_pattern(room_file, buf4_loc, 4);
-    write_at_offset(room_file, offset_room - 4, buf4_item, 4);
-
-    // items file
-    ssize_t offset_items = search_pattern(items_file, buf4_loc, 4);
-    write_at_offset(items_file, offset_items - 4, buf4_item, 4);
-
-    fclose(room_file);
-    fclose(items_file);
-}
 
 void delete_item(uint64_t id_loc)
 {
-    //printf("el path_room de los cojones: <%s>\n", path_room);
     size_t content_len = 0;
     char *room_file_content = str_from_file(path_room, &content_len);
-    //printf("content_len = %zu\n", content_len);
 
     FILE *room_file = fopen(path_room, "rb");
     if (!room_file)
@@ -192,7 +81,6 @@ void delete_item(uint64_t id_loc)
         return;
     }
 
-
     size_t item_offset = get_offset_of_item_tm_file(room_file, id_loc);
     if(!item_offset)
     {
@@ -202,28 +90,14 @@ void delete_item(uint64_t id_loc)
         return;
     }
 
-    /*
-    char buf_file[64];
-    fread(buf_file, 1, 32, room_file);
-    print_hex(buf_file, 32);
-    fseek(room_file, -32, SEEK_CUR);
-    */
-
-    //print_hex(room_file_content + item_offset, 32);
     size_t section_len = get_len_of_section_tm_file(room_file);
-    //printf("section_len = %llX\n", section_len);
-    //printf("section_len + 4 = %llX\n", section_len + 4);
-    //printf("content_len = %llX\n", content_len);
 
-
-    //printf("Before get_offset_of_item\n");
     eliminate_range_from_string(room_file_content, item_offset, section_len + 4, content_len);
-    //printf("After get_offset_of_item\n");
     file_from_string(path_room, room_file_content, content_len - section_len - 4);
     free(room_file_content);
 }
 
-void randomize_item2(FILE *room_file, FILE *items_file, uint64_t id_loc)
+void randomize_item2(FILE *room_file, FILE *items_file, uint64_t id_loc, enum items_group e_group)
 {
     // TODO: format log
     log(LOG_VERY_MINOR, "Randomizing item\n");
@@ -231,8 +105,18 @@ void randomize_item2(FILE *room_file, FILE *items_file, uint64_t id_loc)
     char buf4_loc[4];
     char buf4_item[4];
 
-    //enum item_id new_item = get_random_item(allitems, allitems_nb);
-    enum item_id new_item = get_random_item_with_prob();
+    enum item_id new_item;
+
+    if (e_group == ALLITEMS)
+    {
+        new_item = get_random_item_with_prob();
+    }
+    else
+    {
+        new_item = get_random_item(items_groups[e_group], items_groups_lens[e_group]);
+    }
+
+
 
     if (new_item == NONE)
     {
@@ -258,55 +142,13 @@ void randomize_item2(FILE *room_file, FILE *items_file, uint64_t id_loc)
 
     int loc = lsb_from_long(id_loc);
 
-    itoa_hex(loc, buf4_loc);
-    itoa_hex(new_item, buf4_item);
-
-    // room file
-    ssize_t offset_room = search_pattern(room_file, buf4_loc, 4);
-    write_at_offset(room_file, offset_room - 4, buf4_item, 4);
-
-    // items file
-    ssize_t offset_items = search_pattern(items_file, buf4_loc, 4);
-    write_at_offset(items_file, offset_items - 4, buf4_item, 4);
-}
-
-void randomize_room(enum room_id room)
-{
-    switch(room)
-    {
-    case B000:
-        printf("LOG: Randomizing room B000\n");
-        printf("LOG: Did not do anything\n");
-        break;
-    case B008:
-        printf("LOG: Randomizing room B008\n");
-        randomize_item(room, CAFE_BBAT, weapons, WEAPONS_NB);
-        randomize_item(room, CAFE_DISC, allitems, allitems_nb);
-        randomize_item(room, CAFE_ENER, allitems, allitems_nb);
-        break;
-    case E103:
-        printf("LOG: Randomizing room E103\n");
-        randomize_item(room, INFI_DISC, allitems, allitems_nb);
-        randomize_item(room, INFI_FAID1, allitems, allitems_nb);
-        randomize_item(room, INFI_FAID2, allitems, allitems_nb);
-        randomize_item(room, INFI_FAID3, allitems, allitems_nb);
-        break;
-    default:
-        printf("Unknown room");
-        break;
-    }
+    replace_item(room_file, items_file, loc, new_item);
 }
 
 void randomize_room2(struct room *room)
 {
 
     char buf_log[512];
-    sprintf(buf_log, "Randomizing room %s\n", room->id);
-    log(LOG_MINOR, buf_log);
-    /*
-    sprintf(buf_log, "Randomizing room %s\n", room->id);
-    log(LOG_MINOR, buf_log);
-    */
     if (check_items_in_room(room))
     {
         // we restore the room before randomizing it
@@ -342,7 +184,7 @@ void randomize_room2(struct room *room)
     {
         if (strcmp(room->id, "b008") == 0 && lsb_from_long(room->items[i]) == 0x020402)
         {
-            randomize_item(get_e_room_from_id(room->id), 0x020402, weapons, WEAPONS_NB);
+            randomize_item2(room_file, items_file, 0x020402, DAMAGE_WEAPONS);
             continue;
         }
         if (strcmp(room->id, "a004") == 0 && lsb_from_long(room->items[i]) == 0x010203)
@@ -351,11 +193,14 @@ void randomize_room2(struct room *room)
         }
         if (strcmp(room->id, "a004") == 0 && lsb_from_long(room->items[i]) == 0x010201)
         {
-            //randomize_item(get_e_room_from_id(room->id), 0x010201, guns, GUNS_NB);
+            continue;
+        }
+        if (strcmp(room->id, "a004") == 0 && lsb_from_long(room->items[i]) == 0x010202)
+        {
             continue;
         }
 
-        randomize_item2(room_file, items_file, item);
+        randomize_item2(room_file, items_file, item, ALLITEMS);
     }
 }
 
@@ -423,7 +268,6 @@ struct room *parse_room()
             break;
         }
         int lsb = msb_from_long(id_loc);
-        //printf("lsb: %X\n", lsb);
         size_t j = 0;
         while (j < allitems_nb)
         {

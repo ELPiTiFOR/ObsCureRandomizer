@@ -32,9 +32,6 @@ long buf_to_long(unsigned char *buf)
     {
         res = res << 8;
         res |= buf[i];
-        char buf_log[512];
-        sprintf(buf_log, "Buf_to_long iter: %zu | long: %x\n", i, res);
-        //log(LOG_VERY_MINOR, buf_log);
     }
 
     return res;
@@ -47,9 +44,6 @@ uint64_t buf_to_long_long(unsigned char *buf)
     {
         res = res << 8;
         res |= buf[i];
-        char buf_log[512];
-        sprintf(buf_log, "Buf_to_long iter: %zu | buf[i]: %02X | long: %016llX\n", i, buf[i], res);
-        //log(LOG_VERY_MINOR, buf_log);
     }
 
     return res;
@@ -65,7 +59,6 @@ void string_toupper(char *str)
 
 void print_hex(unsigned char *buf, size_t n)
 {
-    printf("Printing...\n");
     size_t i = 0;
     while (i < n)
     {
@@ -185,7 +178,6 @@ char *duplicate_string(char *str)
 
 char *duplicate_string_until(char *str, int c, size_t *index)
 {
-    //printf("DUPLICATE_STRING_UNTIL: %s\n", str);
     char *mark = my_strchrnul(str, c);
     if (!mark)
     {
@@ -194,7 +186,6 @@ char *duplicate_string_until(char *str, int c, size_t *index)
         log(ERROR, buf_log);
         return NULL;
     }
-    //printf("MARK: %s\n", mark);
     if (*mark == '\n' && *(mark - 1) == '\r')
     {
         *(mark - 1) = 0;
@@ -240,11 +231,9 @@ char **equal_from_line(char *str, size_t *index_ptr)
         free_argv(couple);
         return NULL;
     }
-    //printf("new index: %c", str[index]);
     couple[0] = key;
 
     index++;
-    //printf("value / str + %d: %c", index, str[index]);
     char *value = duplicate_string_until(str + index, '\n', &index);
     if (!value)
     {
@@ -253,8 +242,6 @@ char **equal_from_line(char *str, size_t *index_ptr)
     }
     couple[1] = value;
     *index_ptr += index + 1;
-    //printf("new index: %c", str[index]);
-    //print_argv(2, couple);
 
     return couple;
 }
@@ -284,9 +271,6 @@ char ***config_from_str(char *str)
     do
     {
         nb_couples += 1;
-        char buf_log[512];
-        sprintf(buf_log, "config_from_str nb_couples = %zu\n", nb_couples);
-        log(LOG_VERY_MINOR, buf_log);
 
         char ***config2 = realloc(config, sizeof(char **) * (nb_couples + 1));
         if (!config2)
@@ -298,13 +282,6 @@ char ***config_from_str(char *str)
         config = config2;
         config[nb_couples] = NULL;
 
-        /*
-        if (str[index] == '\n')
-        {
-            index++;
-        }
-        */
-
         char **couple = equal_from_line(str + index, &index);
         if (!couple)
         {
@@ -315,7 +292,6 @@ char ***config_from_str(char *str)
             return NULL;
         }
 
-        //printf("str[index] = %s", str + index);
         config[nb_couples - 1] = couple;
     } while (str[index] && nb_couples < 10);
 
@@ -342,31 +318,14 @@ void print_config(char ***config)
 
 void eliminate_range_from_string(char *str, size_t offset, size_t len_section, size_t len_str)
 {
-    /*
-    printf("The old string: len: %zu\n", len_section);
-    print_hex(str + offset, 16);
-    print_hex(str + offset + len_section, 16);
-    puts("");
-    */
 
     char *p = str + offset;
     char *p2 = str + offset + len_section;
-    //printf("*p = %02X\n", *p);
-    //printf("*p2 = %02X\n", *p2);
 
     size_t i = 0;
     size_t len = len_str - len_section - offset;
-    //printf("len = %zu | len_str = %zu | len_section = %zu | offset = %zu |\n", len, len_str, len_section, offset);
-    //printf("len = %llX | len_str = %llX | len_section = %llX | offset = %llX |\n", len, len_str, len_section, offset);
     while (i < len)
     {
-        /*
-
-        printf("bueno\n");
-
-        printf("*p = %hhX\n", *p);
-        printf("*p2 = %hhX\n", *p2);
-        */
         *p = *p2;
         i++;
         p++;
@@ -374,16 +333,98 @@ void eliminate_range_from_string(char *str, size_t offset, size_t len_section, s
     }
 
     str[offset + i] = 0;
-    /*
-    printf("The new string:\n");
-    print_hex(str + offset, 16);
-    puts("");
-    */
 }
 
+int get_value_from_char_base(char c, int base)
+{
+    char buf_log[64];
+    sprintf(buf_log, "Parsing digit <%c> in base %d\n", c, base);
+    log(LOG_VERY_MINOR, buf_log);
 
+    int res = 0;
 
+    if (c >= '0' && c <= '9')
+    {
+        res = c - '0';
+    }
+    else if (c >= 'a' && c <= 'z')
+    {
+        res = c - 'a' + 10;
+    }
+    else if (c >= 'A' && c <= 'Z')
+    {
+        res = c - 'A' + 10;
+    }
+    else
+    {
+        return -1;
+    }
 
+    if (res >= base)
+    {
+        char buf_log[64];
+        sprintf(buf_log, "%c is an nvalid digit in %d base\n", c, base);
+        log(ERROR, buf_log);
+        return -1;
+    }
+
+    sprintf(buf_log, "Result: %lX\n", res);
+    log(LOG_VERY_MINOR, buf_log);
+    return res;
+}
+
+// ONLY POSITIVE NUMBERS, NO SPACES
+uint32_t my_atoi_base(char *str, int base)
+{
+    char buf_log[64];
+    sprintf(buf_log, "Parsing <%s> in base %d\n", str, base);
+    log(LOG_MINOR, buf_log);
+    uint32_t res = 0;
+    size_t i = 0;
+    char c = 0;
+    while ((c = str[i]))
+    {
+        res *= base;
+        int value = get_value_from_char_base(c, base);
+        if (value < 0)
+        {
+            log(ERROR, "The given string is not a valid\n");
+            return 0;
+        }
+
+        res += value;
+        i++;
+    }
+
+    sprintf(buf_log, "Result: %lX\n", res);
+    log(LOG_VERY_MINOR, buf_log);
+
+    return res;
+}
+
+// returns 0 if str represents False, 1 if it represents True, -1 otherwise
+int bool_str(char *str)
+{
+    string_toupper(str);
+    if (strcmp(str, "TRUE") == 0)
+    {
+        return 1;
+    }
+    else if (strcmp(str, "1") == 0)
+    {
+        return 1;
+    }
+    if (strcmp(str, "FALSE") == 0)
+    {
+        return 0;
+    }
+    else if (strcmp(str, "0") == 0)
+    {
+        return 0;
+    }
+
+    return -1;
+}
 
 
 

@@ -12,9 +12,12 @@
 
 size_t allitems_nb = 0;
 enum item_id allitems[256];
-enum item_id weapons[] = { BBAT, MBAR, ABAT, OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR };
+enum item_id weapons[] = { BBAT, MBAR, ABAT, OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR, LASR, FLSW, FLSY, FLSP };
+enum item_id damage_weapons[] = { BBAT, MBAR, ABAT, OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR };
 enum item_id guns[] = { OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR };
-enum item_id ressource_items[] = { ENER, DISC, FAID, TAPE };
+enum item_id ressource_items[] = { ENER, DISC, FAID, TAPE, SAMM, PAMM };
+enum item_id *items_groups[] = { allitems, weapons, damage_weapons, guns, ressource_items };
+size_t items_groups_lens[] = { WEAPONS_NB + DAMAGE_WEAPONS_NB + GUNS_NB + RESSOURCES_NB, WEAPONS_NB, DAMAGE_WEAPONS_NB, GUNS_NB, RESSOURCES_NB };
 
 enum item_id get_random_item_with_prob()
 {
@@ -107,3 +110,19 @@ void replace_item_allitems(uint32_t loc, uint32_t id)
     fclose(items_file);
 }
 
+int is_a_valid_item_id(uint32_t id)
+{
+    size_t i = 0;
+    uint32_t curr;
+    while ((curr = allitems[i]))
+    {
+        if (id == curr)
+        {
+            return 1;
+        }
+
+        i++;
+    }
+
+    return 0;
+}

@@ -46,7 +46,7 @@ void help()
 void test()
 {
     //path("C:\\SteamLibrary\\steamapps\\common\\Obscure");
-    //print_every_room();
+    print_every_room();
     //print_struct_rooms_ids();
     //print_enum_rooms_ids();
     //print_enum_rooms_array();
@@ -102,6 +102,8 @@ int execute_commands(int argc, char **argv)
 {
     int performed_action = 0;
     enum room_id e_room = NOROOM;
+    uint32_t item = 0x00;
+    uint32_t item_id = 0x00;
 
     // now we manage all other commands/actions
     for (int i = 0; i < argc; i++)
@@ -119,7 +121,7 @@ int execute_commands(int argc, char **argv)
             }
             else
             {
-                fprintf(stderr, "ERROR: You must provide a path after the `--path` option");
+                log(ERROR, "You must provide a path after the `--path` option\n");
             }
         }
 
@@ -132,24 +134,9 @@ int execute_commands(int argc, char **argv)
             }
             else
             {
-                fprintf(stderr, "ERROR: You must provide a path after the `--backup-path` option");
+                log(ERROR, "You must provide a path after the `--backup-path` option\n");
             }
         }
-
-        /*
-        if (strcmp(argv[i], "--log-path") == 0 && argc > i + 1)
-        {
-            if (argc > i + 1)
-            {
-                log_path(argv[i + 1]);
-                i++;
-            }
-            else
-            {
-                fprintf(stderr, "ERROR: You must provide a path after the `--backup-path` option");
-            }
-        }
-        */
 
         if (strcmp(argv[i], "--backup-name") == 0 && argc > i + 1)
         {
@@ -183,7 +170,6 @@ int execute_commands(int argc, char **argv)
             {
                 e_room = get_e_room_from_id(argv[i + 1]);
 
-                // TODO: improve format log
                 sprintf(log_buf, "Setting room %s.\n", rooms[e_room]->id);
                 log(LOG_APP_CMD, log_buf);
 
@@ -251,6 +237,7 @@ int execute_commands(int argc, char **argv)
             if (e_room == NOROOM)
             {
                 log(LOG_APP_CMD, "Restoring game\n");
+                restore_allitems();
                 for (size_t i = 0; i < ROOMS_IDS_STR_NB; i++)
                 {
                     //set_path_room(rooms[rooms_ids[i]]);
@@ -283,6 +270,73 @@ int execute_commands(int argc, char **argv)
             log(LOG_APP_CMD, "Making backup\n");
             performed_action = 1;
             save_state();
+        }
+
+        else if (strcmp(argv[i], "--item") == 0)
+        {
+            if (argc <= i + 1)
+            {
+                log(ERROR, "You must provide an item location (a 4 bytes integer in hexadecimal format) after the `--item` option.\n");
+                return 1;
+            }
+
+            item = my_atoi_base(argv[i + 1], 16);
+            if (item == 0)
+            {
+                log(ERROR, "Invalid item location.\n");
+                return 1;
+            }
+
+            sprintf(buf_log, "Item location %06lX set.\n", item);
+            log(LOG_APP_CMD, buf_log);
+
+            i++;
+        }
+
+        else if (strcmp(argv[i], "--replace") == 0)
+        {
+            if (argc <= i + 1)
+            {
+                log(ERROR, "You must provide an item ID (a 4 bytes integer in hexadecimal format) after the `--replace` option.\n");
+                return 1;
+            }
+
+            item_id = my_atoi_base(argv[i + 1], 16);
+            if (item_id == 0 || !is_a_valid_item_id(item_id))
+            {
+                log(ERROR, "Invalid item ID\n");
+                return 1;
+            }
+
+            if (e_room == NOROOM)
+            {
+                log(ERROR, "You must provide a room before replacing an item\n");
+                return 1;
+            }
+
+            // opening room_file
+            FILE *room_file = fopen(path_room, "r+b");
+            if (!room_file)
+            {
+                log(ERROR, "Couldn't fopen() path_room when replacing\n");
+                return 1;
+            }
+
+            // opening items_file
+            FILE *items_file = fopen(path_items, "r+b");
+            if (!items_file)
+            {
+                log(ERROR, "Couldn't fopen() path_items when replacing\n");
+                fclose(room_file);
+                return 1;
+            }
+
+            sprintf(buf_log, "Replacing item at location %06lX with item with ID %04lX.\n", item, item_id);
+            log(LOG_APP_CMD, buf_log);
+            replace_item(room_file, items_file, item, item_id);
+            performed_action = 1;
+            fclose(items_file);
+            fclose(room_file);
         }
     }
 

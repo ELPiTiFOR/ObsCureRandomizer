@@ -8,17 +8,28 @@
 #include "time.h"
 #include "utils.h"
 
-//char *log_type_str[] = { "LOG_APP_CMD", "LOG_MINOR", "WARN_LOW", "WARN_HIGH", "ERROR", "INFO" };
+char *log_type_str_conf[] = { "LOG_VERY_MINOR", "LOG_MINOR", "LOG_APP_CMD", "WARN_LOW", "WARN_HIGH", "ERROR", "INFO" };
 char *log_type_str[] = { "LOG", "LOG", "LOG", "WARN", "WARN", "ERROR", "INFO" };
 enum log_type log_level = LOG_APP_CMD;
 FILE *log_file = NULL;
 char log_buf[LOG_BUF_SIZE];
+int reset_log = 0;
 
 void set_default_log_file()
 {
     arfillzeros(path_logs, 512);
     strcpy(path_logs, "OCR.log");
-    log_file = fopen(path_logs, "a+");
+    char fopen_flag[] = "a+";
+    if (reset_log)
+    {
+        strcpy(fopen_flag, "w+");
+    }
+
+    char buf_log[64];
+    sprintf(buf_log, "Opening OCR.log with %s flags.\n", fopen_flag);
+    log(LOG_MINOR, buf_log);
+
+    log_file = fopen(path_logs, fopen_flag);
     if (!log_file)
     {
         fprintf(stderr, "ERROR: Couldn't open log_file %s", path_logs);

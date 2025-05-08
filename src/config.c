@@ -56,11 +56,43 @@ void load_config()
             }
 
         }
+        else if (strcmp(config[i][0], "log_level") == 0)
+        {
+            enum log_type log_t = get_log_type_from_string(config[i][1]);
+            if (log_t == NOLOG)
+            {
+                char buf_log[512];
+                sprintf(buf_log, "\"%s\" is not a valid log level. Please use \"EASY\", \"NORMAL\" or \"HARD\".\n", config[i][1]);
+                log(WARN_HIGH, buf_log);
+                log(INFO, "The default log level is LOG_APP_CMD.\n");
+            }
+            else
+            {
+                log_level = log_t;
+            }
+        }
+        else if (strcmp(config[i][0], "reset_log") == 0)
+        {
+            int bool_res = bool_str(config[i][1]);
+            if (bool_res == -1)
+            {
+                char buf_log[64];
+                sprintf(buf_log, "The given reset_log setting is invalid. The default setting is False. Resuming.\n");
+                log(WARN_LOW, buf_log);
+            }
+            else
+            {
+                reset_log = bool_res;
+                char buf_log[64];
+                sprintf(buf_log, "Reset Log option set to %d.\n", bool_res);
+                log(LOG_MINOR, buf_log);
+            }
+        }
 
     }
 
     //print_config(config);
-    print_all_paths();
+    //print_all_paths();
     free(config_str);
     free_triple_char_pointer(config);
 }
@@ -82,3 +114,16 @@ enum difficulty get_difficulty_from_string(char *str)
 
     return NODIFF;
 }
+
+enum log_type get_log_type_from_string(char *str)
+{
+    for (size_t i = 0; i < LOG_TYPES_NB; i++)
+    {
+        if (strcmp(log_type_str_conf[i], str) == 0)
+        {
+            return i;
+        }
+    }
+
+    return NOLOG;
+};

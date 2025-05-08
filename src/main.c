@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
         }
     }
 
+    // now we load the config file
+    load_config();
+    log(LOG_MINOR, "Loaded config\n");
+
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "--log-path") == 0 && argc > i + 1)
@@ -58,10 +62,6 @@ int main(int argc, char *argv[])
     {
         set_default_log_file();
     }
-
-    // now we load the config file
-    load_config();
-    log(LOG_MINOR, "Loaded config\n");
 
     // first we check if one of the options is '--test', in which case
     // we shouldn't perform any other actions

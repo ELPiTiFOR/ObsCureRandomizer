@@ -27,7 +27,8 @@ char ***config_from_str(char *str);
 char * my_strchrnul(char *str, int c);
 void print_config(char ***config);
 void eliminate_range_from_string(char *str, size_t offset, size_t len_section, size_t len_str);
-
+uint32_t my_atoi_base(char *str, int base);
+int bool_str(char *str);
 
 
 #endif // UTILS_H

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#define LOG_TYPES_NB 7
 #define LOG_BUF_SIZE 1024
 
 enum log_type
@@ -13,13 +14,17 @@ enum log_type
     WARN_LOW,
     WARN_HIGH,
     ERROR,
-    INFO
+    INFO,
+
+    NOLOG
 };
 
+extern char *log_type_str_conf[];
 extern char *log_type_str[];
 extern enum log_type log_level;
 extern FILE *log_file;
 extern char log_buf[LOG_BUF_SIZE];
+extern int reset_log;
 
 // /!\ DON'T USE MATH.H, CAUSE IT HAS ITS OWN DEFINITION FOR log()!
 // or rename this log()
