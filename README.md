@@ -91,6 +91,14 @@ write commands to the `cmd`, except that words are delimited by semi colons `;`
 and CRLF `\r\n` instead of spaces, and you don't write the name of the program
 `.\ObsCureRandomizer.exe`. If no script path is given, `script.ocr` will be read
 (in the same directory as the executable).
+- `--item <item_location>`: specify the location of an item to replace it with
+another one (read the info on the `--replace` option). You have to specify a
+room ID first.
+- `--replace <item_id>`: specify the id of the item for which the item at
+`<item_location>` should be replaced. You have to specify an item location
+first.
+- `--delete <item_location>`: delete the item at location `<item_location>`. You
+have to specify a room first.
 
 To avoid specifying the paths each time, you can use a `OCR.config` file in the
 same directory as the executable file. Its syntax must be the following. Each
@@ -101,9 +109,17 @@ sign, followed by another string without any equal sign nor CRLF. Example:
 game-path=C:\some\path\Obscure
 backup-path=E:\some\other\path with spaces\ObsCureRandomizer
 backup-name=Original
+log-path=E:\some\other path\example.log
 difficulty=HARD
+log_level=LOG_APP_CMD
+reset_log=true
 ```
 The `difficulty` must be "EASY", "NORMAL" or "HARD".
+The `log_level` must be "LOG_VERY_MINOR", "LOG_MINOR", "LOG_APP_CMD",
+"WARN_LOW", "WARN_HIGH", "ERROR" or "INFO".
+The `reset_log` specifies whether the log file should be reset with each
+execution of `ObsCureRandomizer.exe` or not. If set to "false", the log file
+might become pretty large pretty quick.
 
 # Items
 ## How it works

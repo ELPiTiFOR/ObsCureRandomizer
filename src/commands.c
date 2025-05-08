@@ -67,7 +67,18 @@ void path(char *path)
 void log_path(char *path)
 {
     set_path_logs(path);
-    log_file = fopen(path_logs, "a+");
+
+    char fopen_flag[] = "a+";
+    if (reset_log)
+    {
+        strcpy(fopen_flag, "w+");
+    }
+
+    char buf_log[1024];
+    sprintf(buf_log, "Opening %s with %s flags.\n", path, fopen_flag);
+    log(LOG_MINOR, buf_log);
+
+    log_file = fopen(path_logs, fopen_flag);
     if (!log_file)
     {
         fprintf(stderr, "ERROR: couldn't open log_file: %s", path_logs);

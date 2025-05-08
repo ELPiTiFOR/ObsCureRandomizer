@@ -39,6 +39,10 @@ void load_config()
         {
             backup_name_cmd(config[i][1]);
         }
+        if (strcmp(config[i][0], "log-path") == 0)
+        {
+            log_path(config[i][1]);
+        }
         if (strcmp(config[i][0], "difficulty") == 0)
         {
 
