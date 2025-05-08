@@ -134,6 +134,7 @@ enum room_id
 void restore_room(struct room* room);
 int restore_room2(enum room_id room);
 void replace_item(FILE *room_file, FILE *items_file, enum item_loc loc, enum item_id new_item);
+void delete_item(uint64_t id_loc);
 void randomize_item(enum item_loc loc, enum items_group e_group /*, enum item_id *group, size_t group_len*/);
 void randomize_room(enum room_id room);
 void randomize_room2(struct room *room);

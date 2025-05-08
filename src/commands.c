@@ -338,6 +338,33 @@ int execute_commands(int argc, char **argv)
             fclose(items_file);
             fclose(room_file);
         }
+        else if (strcmp(argv[i], "--delete") == 0)
+        {
+            if (argc <= i + 1)
+            {
+                log(ERROR, "You must provide an item ID (a 4 bytes integer in hexadecimal format) after the `--delete` option.\n");
+                return 1;
+            }
+
+            item = my_atoi_base(argv[i + 1], 16);
+            if (item == 0)
+            {
+                log(ERROR, "Invalid item location\n");
+                return 1;
+            }
+
+            if (e_room == NOROOM)
+            {
+                log(ERROR, "You must provide a room before replacing an item\n");
+                return 1;
+            }
+
+            i++;
+            sprintf(buf_log, "Deleting item at location %06lX from room with ID %s.\n", item, rooms_ids_str[e_room]);
+            log(LOG_APP_CMD, buf_log);
+            delete_item(item);
+            performed_action = 1;
+        }
     }
 
     if (!performed_action)

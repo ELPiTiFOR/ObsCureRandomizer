@@ -48,6 +48,12 @@ int restore_room2(enum room_id room)
 
 void replace_item(FILE *room_file, FILE *items_file, enum item_loc loc, enum item_id new_item)
 {
+    char buf_log[64];
+    sprintf(buf_log, "Replacing Item: %06lX. With: %04lX.\n", loc, new_item);
+    log(LOG_MINOR, buf_log);
+
+    //print_all_paths();
+
     char buf4_loc[4];
     char buf4_item[4];
 
@@ -56,14 +62,18 @@ void replace_item(FILE *room_file, FILE *items_file, enum item_loc loc, enum ite
 
     // room file
     ssize_t offset_room = search_pattern(room_file, buf4_loc, 4);
+    /*if (offset_room == -1)
+    {
+        char buf_log[64];
+        sprintf(buf_log, "Pattern %06lX not found in room_file.\n", loc);
+        log(ERROR, buf_log);
+        return;
+    }*/
     write_at_offset(room_file, offset_room - 4, buf4_item, 4);
 
     // items file
     ssize_t offset_items = search_pattern(items_file, buf4_loc, 4);
     write_at_offset(items_file, offset_items - 4, buf4_item, 4);
-
-    fclose(room_file);
-    fclose(items_file);
 }
 
 
@@ -95,6 +105,8 @@ void delete_item(uint64_t id_loc)
     eliminate_range_from_string(room_file_content, item_offset, section_len + 4, content_len);
     file_from_string(path_room, room_file_content, content_len - section_len - 4);
     free(room_file_content);
+
+    fclose(room_file);
 }
 
 void randomize_item2(FILE *room_file, FILE *items_file, uint64_t id_loc, enum items_group e_group)
@@ -117,6 +129,10 @@ void randomize_item2(FILE *room_file, FILE *items_file, uint64_t id_loc, enum it
     }
 
 
+
+    char buf_log[64];
+    sprintf(buf_log, "New Item: %04lX.\n", new_item);
+    log(LOG_MINOR, buf_log);
 
     if (new_item == NONE)
     {
@@ -157,7 +173,6 @@ void randomize_room2(struct room *room)
         log(WARN_LOW, buf_log2);
         restore_room2(get_e_room_from_id(room->id));
     }
-
 
     sprintf(buf_log, "Randomizing room %s\n", room->id);
     log(LOG_APP_CMD, buf_log);
