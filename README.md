@@ -7,8 +7,8 @@ This program modifies your game files. If something goes wrong, a file could go
 corrupted and the game could stop working. I'm not responsible for the state of
 your game files, you should maybe make some backup of the files just in case.
 Specifically, you should make backups for all of the
-`$OBS_PATH\\data\\_levels\\x\\xxxx_n.tm` files and the
-`$OBS_PATH\\data\\_common\allitems.it` file, which are the only files this
+`$OBS_PATH\data\_levels\x\xxxx_n.tm` files and the
+`$OBS_PATH\data\_common\allitems.it` file, which are the only files this
 program modifies.
 
 You can also make backups with `ObsCureRandomizer.exe`, for more information
@@ -44,7 +44,7 @@ Those folders are the ones that can be extracted from the `.hvp` files.
 # Usage
 ## What this tool can do
 - This tool can make backups of the `allitems.it` file and the `_n.tm` files,
-which are the files it modifies. The 
+which are the files it modifies.
 - It can restore the files using a backup.
 - It can randomize all the rooms, even though not all items are yet supported
 (It's just a matter of time that I add them). And I still don't manage the items
@@ -53,16 +53,16 @@ difficulties (which are not related to the difficulty of the game), each one
 has different probabilities for an item/weapon to spawn.
 
 ## How to use the tool
-This tool can only be used by a CLI, so first of all open `cmd` in Windows and
-go to the directory where the executable is located with the command `cd`.
+This tool can only be used through a CLI, so first of all open `cmd` in Windows
+and go to the directory where the executable is located with the command `cd`.
 For example, if `ObsCureRandomizer.exe` is at
 `C:\User\Downloads\ObsCureRandomizer.exe`, run:\
-`cd C:\User\Downloads\ObsCureRandomizer.exe`\
+`cd C:\User\Downloads`\
 To invoke the executable, run:
 `.\ObsCureRandomizer.exe [<params>]`\
 Where `[<params>]` is the list of arguments passed to the program.
 
-For each feature of the program, you need to add a option, and sometimes a
+For each feature of the program, you need to add an option, and sometimes a
 parameter after that. For example, if you want to select a specific room:\
 `.\ObsCureRandomizer.exe --room b008`.
 
@@ -104,22 +104,99 @@ To avoid specifying the paths each time, you can use a `OCR.config` file in the
 same directory as the executable file. Its syntax must be the following. Each
 line of the `OCR.config` file must follow this regex: `[^=\r\n]*=[^=\r\n]*`.
 In other words, a string without any equal sign nor CRLF, followed by an equal
-sign, followed by another string without any equal sign nor CRLF. Example:
-```
-game-path=C:\some\path\Obscure
-backup-path=E:\some\other\path with spaces\ObsCureRandomizer
-backup-name=Original
-log-path=E:\some\other path\example.log
-difficulty=HARD
-log_level=LOG_APP_CMD
-reset_log=true
-```
+sign, followed by another string without any equal sign nor CRLF. Example: see
+section "Quickstart".
+
 The `difficulty` must be "EASY", "NORMAL" or "HARD".
 The `log_level` must be "LOG_VERY_MINOR", "LOG_MINOR", "LOG_APP_CMD",
 "WARN_LOW", "WARN_HIGH", "ERROR" or "INFO".
 The `reset_log` specifies whether the log file should be reset with each
 execution of `ObsCureRandomizer.exe` or not. If set to "false", the log file
 might become pretty large pretty quick.
+
+## Quickstart
+Follow this little quickstart guide to get started in only a couple of minutes.
+Download the `ObsCureRandomizer.exe`, move it to whatever directory you like. In
+the same folder, create an `OCR.config` file with the following content:
+```
+game-path=C:\some\path\Obscure
+backup-path=E:\some\other\path with spaces\ObsCureRandomizer
+backup-name=Original
+log-path=E:\some\other path\example.log
+difficulty=EASY
+log_level=LOG_APP_CMD
+reset_log=true
+```
+Change `C:\some\path\Obscure` to the path where your ObsCure game is installed.
+If you don't know where it is, you can easily get to the installation folder
+through Steam. Change `E:\some\other\path with spaces\ObsCureRandomizer` with
+the path where you want your backups to be stored. You can delete the
+`log-path=E:\some\other path\example.log` line, the log file will then be
+`OCR.log` and it will be created in the same folder as the tool.
+
+Once you've done this, open a `cmd` or `powershell` window (you can press the
+Windows key and search "cmd" or "powershell" on the searchbar on Windows 10, I'm
+not sure how it works on Windows 11), write the following command, and then
+press Enter:
+```
+.\ObsCureRandomizer --backup
+```
+This will create a backup of your `_n.tm` and `allitems.it` files at the
+`backup-path` location, inside an `Original` folder (which is the `backup-name`
+in the `OCR.config` file). If you haven't modified the game files yet, then you
+would just have created a backup of the original files of the game. This way,
+you can go back to the original state of the files, and all the items will be
+placed in their original position as intended by the developers of the game. If
+you want to make sure to not lose the content of this backup, you can make
+another backup with another name (for example, "Original 2") if you feel unsafe.
+But unless you execute a `--backup` command on your "Original" backup while the
+game files are in a modified state, you shouldn't worry about losing your
+backup. So, each time you make a backup, be sure to not overwrite another backup
+and make sure you're saving the items position you think you're saving! The tool
+won't ask you if you're sure you want to perform an action, so think before
+executing a command.
+
+Now that we've made a backup, we can randomize the game without losing the
+original state of the game files. Execute the following command:
+```
+.\ObsCureRandomizer --randomize
+```
+This will randomize the whole game. You can now launch the game and check some
+items to see that they've indeed been randomized. You can actually use the tool
+while the game is open, but the new changes will only take effect once the game
+loads a new room or reloads the current one. For example, when loading a save
+game, or when moving to another room.
+
+If you want to save the current state of the items, you can make a new backup.
+To do that, change the line:
+```
+backup-name=Original
+```
+With (change "Your New Backup Name" with whatever name you want to give it):
+```
+backup-name=Your New Backup Name
+```
+And then execute the command we wrote earlier to make the first backup:
+```
+.\ObsCureRandomizer --backup
+```
+
+If you want to go back to one of your backups, you just need to set the name of
+the backup you want to go back to in your `OCR.config` file and execute the
+`--restore` command. For example, if we have an "Original" and a "Your New
+Backup Name" backups and we want to restore the game to the "Original" state,
+you have to set the `backup-name` just like we did earlier:
+```
+backup-name=Original
+```
+And then execute the command:
+```
+.\ObsCureRandomizer --restore
+```
+
+You've just learned how to make a backup, how to randomize the game, and how
+to restore it using a backup, congratulations! Now you can learn more about the
+tool reading the rest of the README.
 
 # Items
 ## How it works
