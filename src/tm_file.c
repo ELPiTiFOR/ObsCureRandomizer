@@ -72,8 +72,11 @@ size_t get_offset_of_item_tm_file(FILE *file, uint64_t id_loc)
     return 0;
 }
 
-// moves file to the next section
-// returns whether EOF was reached
+void initialize_tm_file(FILE *file)
+{
+    fseek(file, 4, SEEK_SET);
+}
+
 int goto_next_section_tm_file(FILE *file)
 {
     long len = get_len_of_section_tm_file(file);

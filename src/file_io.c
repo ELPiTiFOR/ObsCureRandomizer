@@ -268,11 +268,6 @@ char **str_to_argv(char *str, int *argc)
     return res;
 }
 
-void initialize_tm_file(FILE *file)
-{
-    fseek(file, 4, SEEK_SET);
-}
-
 int get_buf_from_file(FILE *file, size_t from, size_t to, unsigned char *buf)
 {
     fseek(file, from, SEEK_CUR);

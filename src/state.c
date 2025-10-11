@@ -9,8 +9,6 @@
 #include "room_vars.h"
 #include "utils.h"
 
-// We need to save _common\\allitems.it and all the
-// _levels\\x\\xxxx\\xxxx_n.tm
 void save_state()
 {
     log(LOG_MINOR, "Saving state\n");
