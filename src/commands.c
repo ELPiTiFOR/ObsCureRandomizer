@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "business.h"
 #include "file_io.h"
 #include "logger.h"
 #include "path.h"
@@ -374,6 +375,27 @@ int execute_commands(int argc, char **argv)
             sprintf(buf_log, "Deleting item at location %06lX from room with ID %s.\n", item, rooms_ids_str[e_room]);
             log(LOG_APP_CMD, buf_log);
             delete_item(item);
+            performed_action = 1;
+        }
+        else if (strcmp(argv[i], "--tm_parse") == 0)
+        {
+            if (argc <= i + 1)
+            {
+                log(ERROR, "You must provide a room name.\n");
+                return 1;
+            }
+
+            e_room = get_e_room_from_id(argv[i + 1]);
+            if (e_room == NOROOM)
+            {
+                log(ERROR, "You must provide a valid room\n");
+                return 1;
+            }
+
+            i++;
+            sprintf(buf_log, "Parsing %s_n.tm.\n", /*item,*/ rooms_ids_str[e_room]);
+            log(LOG_APP_CMD, buf_log);
+            parse_and_print_tm_file(rooms[e_room]);
             performed_action = 1;
         }
     }

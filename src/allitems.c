@@ -12,10 +12,13 @@
 
 size_t allitems_nb = 0;
 enum item_id allitems[256];
+enum hidden_id allitems_h[256];
 enum item_id weapons[] = { BBAT, MBAR, ABAT, OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR, LASR, FLSW, FLSY, FLSP };
+enum item_id weapons_h[] = { BBAT_H, MBAR_H, ABAT_H, OPIS_H, APIS_H, FGUN_H, REVO_H, LGUN_H, SHOT_H, DBAR_H, LASR_H, FLSW_H, FLSY_H, FLSP_H };
 enum item_id damage_weapons[] = { BBAT, MBAR, ABAT, OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR };
 enum item_id guns[] = { OPIS, APIS, FGUN, REVO, LGUN, SHOT, DBAR };
 enum item_id ressource_items[] = { ENER, DISC, FAID, TAPE, SAMM, PAMM };
+enum hidden_id ressource_items_h[] = { ENER_H, DISC_H, FAID_H, TAPE_H, SAMM_H, PAMM_H };
 enum item_id *items_groups[] = { allitems, weapons, damage_weapons, guns, ressource_items };
 size_t items_groups_lens[] = { WEAPONS_NB + DAMAGE_WEAPONS_NB + GUNS_NB + RESSOURCES_NB, WEAPONS_NB, DAMAGE_WEAPONS_NB, GUNS_NB, RESSOURCES_NB };
 
@@ -44,6 +47,7 @@ void groupscat()
     for (size_t i = 0; i < 256; i++)
     {
         allitems[i] = NONE;
+        allitems_h[i] = NONE_H;
     }
 
     size_t i = 0;
@@ -51,12 +55,14 @@ void groupscat()
     for (size_t j = 0; j < WEAPONS_NB; j++)
     {
         allitems[i] = weapons[j];
+        allitems_h[i] = weapons_h[j];
         i++;
     }
 
     for (size_t j = 0; j < RESSOURCES_NB; j++)
     {
         allitems[i] = ressource_items[j];
+        allitems_h[i] = ressource_items_h[j];
         i++;
     }
 
@@ -125,4 +131,20 @@ int is_a_valid_item_id(uint32_t id)
     }
 
     return 0;
+}
+
+enum hidden_id get_hidden_id_from_item_id(enum item_id item_id)
+{
+    size_t i = 0;
+    while (i < allitems_nb && allitems[i] != item_id)
+    {
+        i++;
+    }
+
+    if (i == allitems_nb)
+    {
+        return NONE_H;
+    }
+
+    return allitems_h[i];
 }

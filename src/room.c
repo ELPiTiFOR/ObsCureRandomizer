@@ -10,6 +10,7 @@
 #include "file_io.h"
 #include "file_read.h"
 #include "file_write.h"
+#include "hoe_file.h"
 #include "logger.h"
 #include "path.h"
 #include "room_debug.h"
@@ -41,6 +42,7 @@ int restore_room2(enum room_id room)
     for (size_t i = 0; my_room->items[i] && i < 15; i++)
     {
         replace_item_allitems(lsb_from_long(my_room->items[i]), msb_from_long(my_room->items[i]));
+        replace_hidden_item(lsb_from_long(my_room->items[i]), msb_from_long(my_room->items[i]));
     }
 
     return 0;
@@ -74,6 +76,11 @@ void replace_item(FILE *room_file, FILE *items_file, enum item_loc loc, enum ite
     // items file
     ssize_t offset_items = search_pattern(items_file, buf4_loc, 4);
     write_at_offset(items_file, offset_items - 4, buf4_item, 4);
+
+    if (replace_hidden_item(loc, new_item) == 0)
+    {
+        log(LOG_MINOR, "Replaced a hidden item");
+    }
 }
 
 

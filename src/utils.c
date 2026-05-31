@@ -426,7 +426,73 @@ int bool_str(char *str)
     return -1;
 }
 
+int check_pattern_str(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p)
+{
+    if (str[0] == 0x40)
+    {
+        printf("str = %02X %02X %02X %02X\n", str[0], str[1], str[2], str[3]);
+        printf("pat = %02X %02X %02X %02X\n", pat[0], pat[1], pat[2], pat[3]);
+    }
 
+    size_t i = 0;
+    while (i < len_s && i < len_p && str[i] == pat[i])
+    {
+        i++;
+    }
+
+    return i == len_p;
+}
+
+ssize_t search_pattern_str(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p)
+{
+    ssize_t i = 0;
+    while (i < len_s)
+    {
+        if (i == 0x3ac1d)
+        {
+            printf("hola\n");
+            printf("str = %02X %02X %02X %02X\n", str[i], str[i + 1], str[i + 2], str[i + 3]);
+            printf("hola\n");
+            printf("pat = %02X %02X %02X %02X\n", pat[0], pat[0 + 1], pat[0 + 2], pat[0 + 3]);
+            printf("hola\n");
+        }
+        if (str[i] == pat[0] && check_pattern_str(str + i, len_s - i, pat, len_p))
+        {
+            return i;
+        }
+
+        i++;
+    }
+
+    return -1;
+}
+
+int check_pattern_str_backwards(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p)
+{
+    size_t i = 0;
+    while (i < len_s && i < len_p && str[-i] == pat[i])
+    {
+        i++;
+    }
+
+    return i == len_p;
+}
+
+ssize_t search_pattern_str_backwards(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p)
+{
+    ssize_t i = 0;
+    while (i < len_s)
+    {
+        if (str[-i] == pat[0] && check_pattern_str_backwards(str - i, len_s - i, pat, len_p))
+        {
+            return i;
+        }
+
+        i++;
+    }
+
+    return -1;
+}
 
 
 

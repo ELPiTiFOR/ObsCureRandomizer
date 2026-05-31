@@ -1,9 +1,31 @@
 #include "tm_file.h"
 
+#include <stdlib.h>
+
 #include "file_io.h"
 #include "logger.h"
 #include "path.h"
 #include "utils.h"
+
+uint32_t get_first_number(FILE *file)
+{
+    uint32_t res = 0;
+    uint8_t buf[4];
+    size_t r = fread(buf, 1, 4, file);
+    if (!r)
+    {
+        log(ERROR, "Couldn't get first number\n");
+        return -1;
+    }
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        res = res << 8;
+        res |= buf[i];
+    }
+
+    return res;
+}
 
 long get_len_of_section_tm_file(FILE *file)
 {
@@ -40,6 +62,66 @@ long get_len_of_section_tm_file(FILE *file)
     return len;
 }
 
+// doesn't fseek back in place
+uint8_t *get_content_of_section_tm_file(FILE *file, size_t len)
+{
+    uint8_t *res = malloc(len);
+    if (!res)
+    {
+        log(ERROR, "Couldn't alloc content\n");
+        return NULL;
+    }
+
+    fseek(file, 4, SEEK_CUR);
+    size_t r = 0;
+    if ((r = fread(res, 1, len, file)) == 0)
+    {
+        free(res);
+        return NULL;
+    }
+
+    //fseek(file, -4 - r, SEEK_CUR);
+    return res;
+}
+
+int get_tm_item_section(FILE *tm_file, tm_item_section *item)
+{
+    // type
+    uint32_t type = get_first_number(tm_file);
+    item->type = type;
+    item->len_content = get_first_number(tm_file);
+    item->item_id = get_first_number(tm_file);
+    item->item_location = get_first_number(tm_file);
+    item->x_pos = get_first_number(tm_file);
+    item->y_pos = get_first_number(tm_file);
+    item->z_pos = get_first_number(tm_file);
+    item->x_rot = get_first_number(tm_file);
+    item->y_rot = get_first_number(tm_file);
+    item->z_rot = get_first_number(tm_file);
+
+    uint8_t buf[24];
+    fread(buf, 1, 24, tm_file);
+    for (size_t i = 0; i < 24; i++)
+    {
+        item->unknown[i] = buf[i];
+    }
+
+    item->len_info_diff = get_first_number(tm_file);
+
+    uint8_t *info_diff = malloc(item->len_info_diff);
+    if (!info_diff)
+    {
+        log(ERROR, "Couldn't malloc for info_diff\n");
+        return 1;
+    }
+
+    fread(info_diff, 1, item->len_info_diff, tm_file);
+
+    item->info_diff = info_diff;
+
+    return 0;
+}
+
 size_t get_offset_of_item_tm_file(FILE *file, uint64_t id_loc)
 {
     //size_t old_offset = ftell(file);
@@ -71,6 +153,7 @@ size_t get_offset_of_item_tm_file(FILE *file, uint64_t id_loc)
     //fseek(file, old_offset, SEEK_SET);
     return 0;
 }
+
 
 void initialize_tm_file(FILE *file)
 {
@@ -117,6 +200,49 @@ uint64_t get_item_id_and_location_tm_file(FILE *file)
     }
 
     return buf_to_long_long(data);
+}
+
+void print_tm_item_section(tm_item_section *item)
+{
+    printf("Type: %d\n", item->type);
+    size_t len_content = item->len_content;
+    printf("Length of section: %d\n", item->len_content);
+    printf("    Item ID: %04X\n", item->item_id);
+    printf("    Item location: %06X\n", item->item_location);
+
+    printf("    X pos: %d\n", item->x_pos);
+    printf("    Y pos: %d\n", item->y_pos);
+    printf("    Z pos: %d\n", item->z_pos);
+
+    printf("    X rot: %d\n", item->x_rot);
+    printf("    Y rot: %d\n", item->y_rot);
+    printf("    Z rot: %d\n", item->z_rot);
+
+    for (size_t i = 0; i < 24; i++)
+    {
+        if (i % 16 == 0)
+        {
+            printf("    ");
+        }
+
+        printf("%02X ", item->unknown[i]);
+
+        if ((i + 1) % 16 == 0)
+        {
+            putchar('\n');
+        }
+    }
+    putchar('\n');
+
+    printf("    Length of Info and Diff: %d\n", item->len_info_diff);
+    uint32_t len_info_diff = item->len_info_diff;
+    printf("    Info diff: <");
+    for (size_t i = 0; i < len_info_diff; i++)
+    {
+        printf("%c", item->info_diff[i]);
+    }
+
+    puts(">");
 }
 
 int goto_items_tm_file(FILE *file)
@@ -210,7 +336,151 @@ int check_items_in_room(struct room *room)
 }
 
 
+tm_file *parse_tm_file(char *path)
+{
+    FILE *file = fopen(path, "r+b");
+    if (!file)
+    {
+        char log_buf[512];
+        sprintf(log_buf, "Couldn't open tm_file %s\n", path);
+        log(ERROR, log_buf);
+        return NULL;
+    }
+
+    tm_file *tm = malloc(sizeof(tm_file));
+    if (!tm)
+    {
+        log(ERROR, "Couldn't alloc tm\n");
+        fclose(file);
+        return NULL;
+    }
+
+    uint32_t fn = get_first_number(file);
+    if (fn == -1)
+    {
+        fclose(file);
+        free_tm_file(tm);
+        return NULL;
+    }
+
+    size_t len_sections = 0;
+    size_t len_item_sections = 0;
+    char buf_id[5];
+    tm_generic_section *sections = NULL;
+    tm_item_section *item_sections = NULL;
+
+    while (get_id_of_section_tm_file(file, buf_id) == 0)
+    {
+        uint32_t type = 0;
+        for (size_t i = 0; i < 4; i++)
+        {
+            type = type << 8;
+            type |= buf_id[i];
+        }
+
+        if (type == ITEM_SECTION)
+        {
+            len_item_sections += 1;
+            tm_item_section *item_sections2 = realloc(item_sections, len_item_sections * sizeof(tm_item_section));
+            if (!item_sections2)
+            {
+                fclose(file);
+                free_tm_file(tm);
+                return NULL;
+            }
+
+            item_sections = item_sections2;
+            tm_item_section *tm_item_section = item_sections + len_item_sections - 1;
+            get_tm_item_section(file, tm_item_section);
+            /*
+            printf("#################\n");
+            print_tm_item_section(item_sections);
+            printf("#################\n");
+            */
+            continue;
+        }
+
+        len_sections += 1;
+
+        tm_generic_section *sections2 = realloc(sections, len_sections * sizeof(tm_generic_section));
+        if (!sections2)
+        {
+            fclose(file);
+            free_tm_file(tm);
+            return NULL;
+        }
+
+        sections = sections2;
+        tm_generic_section *tm_section = sections + len_sections - 1;
+
+        tm_section->type = type;
+        size_t len_content = get_len_of_section_tm_file(file);
+        tm_section->len_content = len_content;
+        uint8_t *content = get_content_of_section_tm_file(file, len_content);
+        if (!content)
+        {
+            fclose(file);
+            free_tm_file(tm);
+            return NULL;
+        }
+
+        tm_section->content = content;
+    }
+
+    tm->first_number = fn;
+    tm->len_sections = len_sections;
+    tm->sections = sections;
+    tm->len_item_sections = len_item_sections;
+    tm->items = item_sections;
+}
+
+void free_tm_file(tm_file *tm)
+{
+    tm_generic_section *p = tm->sections;
+    size_t len_sections = tm->len_sections;
+    for (size_t i = 0; i < len_sections; i++)
+    {
+        free(p->content);
+    }
+
+    free(tm->sections);
+}
+
+void print_tm_generic_section(tm_generic_section *tm_sec)
+{
+    printf("Type: %d\n", tm_sec->type);
+    size_t len_content = tm_sec->len_content;
+    printf("Length of section: %d\n", tm_sec->len_content);
+
+    for (size_t i = 0; i < len_content; i++)
+    {
+        printf("%02X ", tm_sec->content[i]);
+
+        if ((i + 1) % 16 == 0)
+        {
+            putchar('\n');
+        }
+    }
+
+    putchar('\n');
+}
 
 
+void print_tm_file(tm_file *tm)
+{
+    printf("# First number: %d\n", tm->first_number);
+    size_t len_sections = tm->len_sections;
+    size_t len_item_sections = tm->len_item_sections;
+    printf("# Sections: \n");
+    for (size_t i = 0; i < len_sections; i++)
+    {
+        print_tm_generic_section(&tm->sections[i]);
+    }
 
-
+    printf("# Items: \n");
+    for (size_t i = 0; i < len_item_sections; i++)
+    {
+        tm_item_section *it = &tm->items[i];
+        print_tm_item_section(it);
+    }
+}

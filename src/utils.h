@@ -30,5 +30,12 @@ void eliminate_range_from_string(char *str, size_t offset, size_t len_section, s
 uint32_t my_atoi_base(char *str, int base);
 int bool_str(char *str);
 
+// checks if str starts by pat
+int check_pattern_str(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p);
+// searches for pattern in str
+ssize_t search_pattern_str(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p);
+
+int check_pattern_str_backwards(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p);
+ssize_t search_pattern_str_backwards(unsigned char *str, size_t len_s, unsigned char *pat, size_t len_p);
 
 #endif // UTILS_H

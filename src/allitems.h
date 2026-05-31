@@ -99,6 +99,41 @@ enum items_group
     RESSOURCES
 };
 
+enum hidden_id
+{
+    // WEAPONS
+    BBAT_H = 0x0069,
+    MBAR_H = 0x006A,
+    ABAT_H = 0x006B,
+
+    OPIS_H = 0x006C,
+    APIS_H = 0x006D,
+    FGUN_H = 0x0074,
+    REVO_H = 0x006E,
+    LGUN_H = 0x006F,
+    SHOT_H = 0x0071,
+    DBAR_H = 0x0072,
+
+    LASR_H = 0x0070,
+
+    FLSW_H = 0X0066,
+    FLSY_H = 0x0067,
+    FLSP_H = 0x0068,
+
+
+
+    // RESSOURCE ITEMS
+    ENER_H = 0x00AB,
+    DISC_H = 0x00A2,
+    FAID_H = 0x00A6,
+    TAPE_H = 0x00A3,
+
+    SAMM_H = 0x007A,
+    PAMM_H = 0x007B,
+
+    NONE_H = 0x0000
+};
+
 extern size_t allitems_nb;
 extern enum item_id allitems[256];
 extern enum item_id weapons[WEAPONS_NB];
@@ -114,5 +149,6 @@ void groupscat();
 int restore_allitems();
 void replace_item_allitems(uint32_t loc, uint32_t id);
 int is_a_valid_item_id(uint32_t id);
+enum hidden_id get_hidden_id_from_item_id(enum item_id item_id);
 
 #endif // ALLITEMS_H

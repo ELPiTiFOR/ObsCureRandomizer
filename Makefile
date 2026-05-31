@@ -1,7 +1,9 @@
 CC = "C:\Program Files\CodeBlocks\MinGW\bin\gcc.exe"
 #WR = "C:\Program Files\CodeBlocks\MinGW\bin\windres.exe"
 #CFLAGS = -Wall -Werror -pedantic -std=c99
-CPPFLAGS = -Isrc
+CPPFLAGS = \
+	-Isrc \
+	-Isrc/hoe_file \
 
 CFLAGS = -std=c99
 
@@ -22,6 +24,8 @@ SRC = \
 	src/state.c \
 	src/tm_file.c \
 	src/utils.c \
+	src/hoe_file/hoe_file.c \
+	src/business.c \
 	#src/data_structures/pointers.c
 
 OBJ = ${SRC:.c=.o}
