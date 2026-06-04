@@ -22,6 +22,12 @@ format:
 ```
 game_path=C:\SteamLibrary\steamapps\common\Obscure
 ```
+Note that you need to have a `data` folder in that path with all the content of
+the HVP files unpacked. If you need a tutorial to do that, check
+[this link](https://youtu.be/iQymvq5d5nc). You don't need to follow all the
+instructions, you can stop at 8:46. Think of making a backup of the `data`
+folder because the contents will be modified by the randomizer.
+
 Then, in order to randomize all the rooms, use the following command.
 ```
 .\ObsCureRandomizer.exe --randomize-all
