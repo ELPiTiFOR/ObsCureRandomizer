@@ -1,35 +1,42 @@
-CC = "C:\Program Files\CodeBlocks\MinGW\bin\gcc.exe"
-#WR = "C:\Program Files\CodeBlocks\MinGW\bin\windres.exe"
-#CFLAGS = -Wall -Werror -pedantic -std=c99
-CPPFLAGS = -Isrc
+CC = gcc.exe
+CFLAGS = -std=c99 #-g
 
-CFLAGS = -std=c99
+CPPFLAGS = \
+	-Ilibs \
+	-Ilibs/ObsCureFileParserHeader \
+	-Ilibs/ObsCureInfoHeader \
+	-Isrc \
+	-Isrc/random \
+	-Isrc/choose_items \
+	-Isrc/config \
+	-Isrc/logger \
+	-Isrc/paths \
+	-Isrc/ocr_config \
+
+LDFLAGS = \
+	-Llibs/ \
+
+LDLIBS = \
+	-lObsCureFileParser \
+	-lObsCureInfo \
 
 SRC = \
-	src/allitems.c \
-	src/commands.c \
-	src/config.c \
-	src/file_debug.c \
-	src/file_io.c \
-	src/file_read.c \
-	src/file_write.c \
-	src/logger.c \
 	src/main.c \
-	src/path.c \
-	src/room_debug.c \
-	src/room_vars.c \
-	src/room.c \
-	src/state.c \
-	src/tm_file.c \
-	src/utils.c \
-	#src/data_structures/pointers.c
+	src/business_ocr.c \
+	src/commands_ocr.c \
+	src/random/random.c \
+	src/choose_items/choose_items.c \
+	src/config/config.c \
+	src/logger/logger.c \
+	src/paths/paths.c \
+	src/ocr_config/ocr_config.c \
 
 OBJ = ${SRC:.c=.o}
 
 all: ObsCureRandomizer
 
 ObsCureRandomizer: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
 clean:
 	$(RM) ObsCureRandomizer $(OBJ)
