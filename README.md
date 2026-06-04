@@ -8,6 +8,13 @@ current goals to achieve are the following:
 This is still WIP, please be patient. It's a rewrite of the old randomizer, so
 some features are still missing.
 
+# Requirements
+You need
+[ObsCureFileParser v0.2.0](https://github.com/ELPiTiFOR/ObsCureFileParser/releases/tag/v0.2.0)
+and
+[ObsCureInfo v0.1.0](https://github.com/ELPiTiFOR/ObsCureInfo/releases/tag/v0.1.0).
+Both DLLs are included in the releases of ObsCureRandomizer.
+
 # Usage
 First, you need to make an `ocr.config` file (you have an example in the source
 code and in the release) with the `game_path` setting, with the following
